@@ -1,55 +1,72 @@
 ﻿using Engine.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Engine.Factories
 {
     internal static class WorldFactory
     {
+        private const string GAME_DATA_FILENAME = ".\\GameData\\World.json";
         internal static World CreateWorld()
         {
-            World newWorld = new World();
-            newWorld.AddLocation(-2, -1, "Farmer's Field",
-                "There are rows of corn growing here, with giant rats hiding between them.",
-                "FarmFields.png");
-            newWorld.LocationAt(-2, -1).AddMonster(2, 100);
-            newWorld.AddLocation(-1, -1, "Farmer's House",
-                "This is the house of your neighbor, Farmer Ted.",
-                "Farmhouse.png");
-            newWorld.LocationAt(-1, -1).TraderHere =
-                TraderFactory.GetTraderByName("Farmer Ted");
-            newWorld.AddLocation(0, -1, "Home",
-                "This is your home",
-                "Home.png");
-            newWorld.AddLocation(-1, 0, "Trading Shop",
-                "The shop of Susan, the trader.",
-                "Trader.png");
-            newWorld.LocationAt(-1, 0).TraderHere =
-                TraderFactory.GetTraderByName("Susan");
-            newWorld.AddLocation(0, 0, "Town square",
-                "You see a fountain here.",
-                "TownSquare.png");
-            newWorld.AddLocation(1, 0, "Town Gate",
-                "There is a gate here, protecting the town from giant spiders.",
-                "TownGate.png");
-            newWorld.AddLocation(2, 0, "Spider Forest",
-                "The trees in this forest are covered with spider webs.",
-                "SpiderForest.png");
-            newWorld.LocationAt(2, 0).AddMonster(3, 100);
-            newWorld.AddLocation(0, 1, "Herbalist's hut",
-                "You see a small hut, with plants drying from the roof.",
-                "HerbalistsHut.png");
-            newWorld.LocationAt(0, 1).TraderHere =
-                TraderFactory.GetTraderByName("Pete the Herbalist");
-            newWorld.LocationAt(0, 1).QuestsAvailableHere.Add(QuestFactory.GetQuestByID(1));
-            newWorld.AddLocation(0, 2, "Herbalist's garden",
-                "There are many plants here, with snakes hiding behind them.",
-                "HerbalistsGarden.png");
-            newWorld.LocationAt(0, 2).AddMonster(1, 100);
+            World newWorld = new();
+            Worlds worlds = JsonHelpr.GetEntity<Worlds>(GAME_DATA_FILENAME);
+
+            foreach (var item in worlds.Locations)
+            {
+                newWorld.AddLocation(item.XCoordinate, item.YCoordinate, item.Name, item.Description, item.ImageName);
+            }
+
+            foreach (var item in worlds.MonsterSpawnAreas)
+            {
+                newWorld.LocationAt(item.XCoordinate, item.YCoordinate).AddMonster(item.Id, item.ChanceOfEncountering);
+            }
+            foreach (var item in worlds.QuestHubs)
+            {
+                newWorld.LocationAt(item.XCoordinate, item.YCoordinate).AddQuest(QuestFactory.GetQuestByID(item.Id));
+            }
+            foreach (var item in worlds.TraderSpawnPoints)
+            {
+                newWorld.LocationAt(item.XCoordinate, item.YCoordinate).AddTrader(TraderFactory.GetTraderByName(item.Name));
+            }
             return newWorld;
         }
     }
+
+    public class Worlds
+    {
+        public List<Locations> Locations { get; set; }
+        public List<BaseWorldData>? QuestHubs { get; set; }
+        public List<MonsterSpawnArea>? MonsterSpawnAreas { get; set; }
+        public List<BaseWorldData>? TraderSpawnPoints { get; set; }
+    }
+    public class MonsterSpawnArea : BaseWorldData
+    {
+        public int ChanceOfEncountering { get; set; }
+    }
+    public class BaseWorldData
+    {
+        public int Id { get; set; }
+
+        public string? Name { get; set; }
+        /// <summary>
+        /// 横坐标
+        /// </summary>
+        public int XCoordinate { get; set; }
+        /// <summary>
+        /// 纵坐标
+        /// </summary>
+        public int YCoordinate { get; set; }
+    }
+    public class Locations: BaseWorldData
+    {
+        /// <summary>
+        /// 描述
+        /// </summary>
+        public string Description { get; set; }
+        /// <summary>
+        /// 图片
+        /// </summary>
+        public string ImageName { get; set; }
+
+    }
+
 }

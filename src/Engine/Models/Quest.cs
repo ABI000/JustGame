@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Engine.Models
+﻿namespace Engine.Models
 {
     public class Quest
     {
         /// <summary>
         /// 任务id
         /// </summary>
-        public int ID { get; }
+        public int Id { get; }
         /// <summary>
         /// 任务名称
         /// </summary>
         public string Name { get; }
-        
+
         /// <summary>
         /// 任务描述
         /// </summary>
@@ -37,6 +31,19 @@ namespace Engine.Models
         /// 物品奖励
         /// </summary>
         public List<ItemQuantity> RewardItems { get; }
+
+        public string ToolTipContents =>
+            Description + Environment.NewLine + Environment.NewLine +
+            "Items to complete the quest" + Environment.NewLine +
+            "===========================" + Environment.NewLine +
+            string.Join(Environment.NewLine, ItemsToComplete.Select(i => i.QuantityItemDescription)) +
+            Environment.NewLine + Environment.NewLine +
+            "Rewards\r\n" +
+            "===========================" + Environment.NewLine +
+            $"{RewardExperiencePoints} experience points" + Environment.NewLine +
+            $"{RewardGold} gold pieces" + Environment.NewLine +
+            string.Join(Environment.NewLine, RewardItems.Select(i => i.QuantityItemDescription));
+
         /// <summary>
         /// 初始化任务
         /// </summary>
@@ -47,16 +54,25 @@ namespace Engine.Models
         /// <param name="rewardExperiencePoints">经验奖励</param>
         /// <param name="rewardGold">金钱奖励</param>
         /// <param name="rewardItems">物品奖励</param>
-        public Quest(int id, string name, string description, List<ItemQuantity> itemsToComplete,
-                     int rewardExperiencePoints, int rewardGold, List<ItemQuantity> rewardItems)
+        public Quest(int id, string name, string description,
+                     int rewardExperiencePoints, int rewardGold, List<ItemQuantity>? itemsToComplete = null, List<ItemQuantity>? rewardItems = null)
         {
-            ID = id;
+            Id = id;
             Name = name;
             Description = description;
-            ItemsToComplete = itemsToComplete;
+            ItemsToComplete = itemsToComplete ?? new List<ItemQuantity>();
             RewardExperiencePoints = rewardExperiencePoints;
             RewardGold = rewardGold;
-            RewardItems = rewardItems;
+            RewardItems = rewardItems ?? new List<ItemQuantity>();
+        }
+
+        public void AddItemToComplete(int itemID, int quantity)
+        {
+            ItemsToComplete.Add(new ItemQuantity(itemID, quantity));
+        }
+        public void AddRewardItem(int itemID, int quantity)
+        {
+            RewardItems.Add(new ItemQuantity(itemID, quantity));
         }
     }
 }

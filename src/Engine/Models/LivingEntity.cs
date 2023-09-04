@@ -249,8 +249,36 @@ namespace Engine.Models
                 }
             }
             OnPropertyChanged(nameof(Weapons));
+            OnPropertyChanged(nameof(Consumables));
+            OnPropertyChanged(nameof(HasConsumable));
+        }
+        public void RemoveItemsFromInventory(List<ItemQuantity> itemQuantities)
+        {
+            foreach (ItemQuantity itemQuantity in itemQuantities)
+            {
+                for (int i = 0; i < itemQuantity.Quantity; i++)
+                {
+                    RemoveItemFromInventory(Inventory.First(item => item.ItemTypeID == itemQuantity.ItemID));
+                }
+            }
         }
 
+        /// <summary>
+        /// 物品检查
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public bool HasAllTheseItems(List<ItemQuantity> items)
+        {
+            foreach (ItemQuantity item in items)
+            {
+                if (Inventory.Count(i => i.ItemTypeID == item.ItemID) < item.Quantity)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         public void RaiseActionPerformedEvent(object sender, string result)
         {
             OnActionPerformed?.Invoke(this, result);
@@ -260,5 +288,33 @@ namespace Engine.Models
         {
             CurrentWeapon.PerformAction(this, target);
         }
+
+        #region 物品逻辑
+        public List<GameItem> Consumables => Inventory.Where(i => i.Category == ItemCategory.Consumable).ToList();
+        public bool HasConsumable => Consumables.Any();
+        private GameItem _currentConsumable;
+        public GameItem CurrentConsumable
+        {
+            get => _currentConsumable;
+            set
+            {
+                if (_currentConsumable != null)
+                {
+                    _currentConsumable.Action.OnActionPerformed -= RaiseActionPerformedEvent;
+                }
+                _currentConsumable = value;
+                if (_currentConsumable != null)
+                {
+                    _currentConsumable.Action.OnActionPerformed += RaiseActionPerformedEvent;
+                }
+                OnPropertyChanged();
+            }
+        }
+        public void UseCurrentConsumable()
+        {
+            CurrentConsumable.PerformAction(this, this);
+            RemoveItemFromInventory(CurrentConsumable);
+        }
+        #endregion
     }
 }

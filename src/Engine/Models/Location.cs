@@ -43,14 +43,21 @@ namespace Engine.Models
         /// </summary>
         public List<MonsterEncounter> MonstersHere { get; set; } =
             new List<MonsterEncounter>();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xCoordinate"></param>
+        /// <param name="yCoordinate"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="imageName"></param>
         public Location(int xCoordinate, int yCoordinate, string name, string description, string imageName)
         {
             XCoordinate = xCoordinate;
             YCoordinate = yCoordinate;
             Name = name;
             Description = description;
-            ImageName = imageName;
+            ImageName = $".\\Images\\Locations\\{imageName}";
         }
         public void AddMonster(int monsterID, int chanceOfEncountering)
         {
@@ -66,6 +73,18 @@ namespace Engine.Models
                 MonstersHere.Add(new MonsterEncounter(monsterID, chanceOfEncountering));
             }
         }
+        public void AddTrader(Trader trader)
+        {
+            TraderHere = trader;
+        }
+        public void AddQuest(Quest quest)
+        {
+            if (!QuestsAvailableHere.Any(x => x.Id == quest.Id))
+            {
+                QuestsAvailableHere.Add(quest);
+            }
+        }
+
         public Monster GetMonster()
         {
             if (!MonstersHere.Any())

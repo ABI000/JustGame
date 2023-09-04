@@ -1,0 +1,21 @@
+[
+  {
+    "Id": 1,
+    "RewardExperiencePoints": 25,
+    "RewardGold": 10,
+    "Name": "Clear the herb garden",
+    "Description": "Defeat the snakes in the Herbalist's garden.",
+    "ItemsToComplete": [
+      {
+        "Id": 9001,
+        "Quantity": 5
+      }
+    ],
+    "RewardItems": [
+      {
+        "Id": 1002,
+        "Quantity": 1
+      }
+    ]
+  }
+]

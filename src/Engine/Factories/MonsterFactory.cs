@@ -1,46 +1,36 @@
 ﻿using Engine.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Engine.Factories
 {
     public static class MonsterFactory
     {
-        public static Monster GetMonster(int monsterID)
+        private const string GAME_DATA_FILENAME = ".\\GameData\\Monster.json";
+        private static readonly List<Monster> _baseMonsters = new();
+        static MonsterFactory()
         {
-            switch (monsterID)
+            List<MonsterGameData> monsterGameDatas = JsonHelpr.GetEntity<List<MonsterGameData>>(GAME_DATA_FILENAME);
+
+            foreach (var item in monsterGameDatas)
             {
-                case 1:
-                    Monster snake =
-                        new Monster("Snake", "Snake.png", 4, 4, 1, 2, 5, 1);
-                    AddLootItem(snake, 9001, 25);
-                    AddLootItem(snake, 9002, 75);
-                    return snake;
-                case 2:
-                    Monster rat =
-                        new Monster("Rat", "Rat.png", 5, 5, 1, 2, 5, 1);
-                    AddLootItem(rat, 9003, 25);
-                    AddLootItem(rat, 9004, 75);
-                    return rat;
-                case 3:
-                    Monster giantSpider =
-                        new Monster("Giant Spider", "GiantSpider.png", 10, 10, 1, 4, 10, 3);
-                    AddLootItem(giantSpider, 9005, 25);
-                    AddLootItem(giantSpider, 9006, 75);
-                    return giantSpider;
-                default:
-                    throw new ArgumentException(string.Format("MonsterType '{0}' does not exist", monsterID));
+                _baseMonsters.Add(new Monster(item.Id, item.Name, $".\\Images\\Monsters\\{item.ImageName}", item.MaximumHitPoints, ItemFactory.CreateGameItem(item.WeaponID), item.RewardXP, item.Gold));
             }
         }
-        private static void AddLootItem(Monster monster, int itemID, int percentage)
+        public static Monster GetMonster(int id)
         {
-            if (RandomNumberGenerator.NumberBetween(1, 100) <= percentage)
-            {
-                monster.Inventory.Add(ItemFactory.CreateGameItem(itemID));
-            }
+            return _baseMonsters.FirstOrDefault(m => m.Id == id)?.GetNewInstance();
         }
+    }
+
+
+    public class MonsterGameData
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int MaximumHitPoints { get; set; }
+        public int WeaponID { get; set; }
+        public int RewardXP { get; set; }
+        public int Gold { get; set; }
+        public string ImageName { get; set; }
+        public List<GameItem> LootItems { get; set; }
     }
 }

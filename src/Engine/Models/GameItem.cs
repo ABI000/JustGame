@@ -27,8 +27,8 @@ namespace Engine.Models
         /// 是否唯一
         /// </summary>
         public bool IsUnique { get; }
-        public AttackWithWeapon Action { get; set; }
-        public GameItem(int itemTypeID, string name, int price, bool isUnique = false, AttackWithWeapon action = null, ItemCategory category = ItemCategory.Miscellaneous)
+        public IAction Action { get; set; }
+        public GameItem(ItemCategory category, int itemTypeID, string name, int price, bool isUnique = false, IAction action = null)
         {
             ItemTypeID = itemTypeID;
             Name = name;
@@ -43,12 +43,13 @@ namespace Engine.Models
         }
         public GameItem Clone()
         {
-            return new GameItem(ItemTypeID, Name, Price, IsUnique, Action, Category);
+            return new GameItem(Category, ItemTypeID, Name, Price, IsUnique, Action);
         }
     }
     public enum ItemCategory
     {
         Miscellaneous,
-        Weapon
+        Weapon,
+        Consumable
     }
 }

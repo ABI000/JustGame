@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,18 +13,20 @@ namespace Engine.Factories
     /// </summary>
     public static class TraderFactory
     {
+        private const string GAME_DATA_FILENAME = ".\\GameData\\Trader.json";
         private static readonly List<Trader> _traders = new List<Trader>();
         static TraderFactory()
         {
-            Trader susan = new Trader("Susan");
-            susan.AddItemToInventory(ItemFactory.CreateGameItem(1001));
-            Trader farmerTed = new Trader("Farmer Ted");
-            farmerTed.AddItemToInventory(ItemFactory.CreateGameItem(1001));
-            Trader peteTheHerbalist = new Trader("Pete the Herbalist");
-            peteTheHerbalist.AddItemToInventory(ItemFactory.CreateGameItem(1001));
-            AddTraderToList(susan);
-            AddTraderToList(farmerTed);
-            AddTraderToList(peteTheHerbalist);
+            List<TraderGameData> traderGameDatas = JsonHelpr.GetEntity<List<TraderGameData>>(GAME_DATA_FILENAME);
+            foreach (var data in traderGameDatas)
+            {
+                Trader trader = new Trader(data.Id, data.Name);
+                foreach (var traderGameData in data.InventoryItems)
+                {
+                    trader.AddItemToInventory(ItemFactory.CreateGameItem(traderGameData.Id));
+                }
+                AddTraderToList(trader);
+            }
         }
         public static Trader GetTraderByName(string name)
         {
@@ -37,5 +40,12 @@ namespace Engine.Factories
             }
             _traders.Add(trader);
         }
+    }
+    public class TraderGameData
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public List<ItemQuantityGameData> InventoryItems { get; set; }
+
     }
 }

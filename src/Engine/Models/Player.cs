@@ -17,6 +17,7 @@ namespace Engine.Models
             CharacterClass = characterClass;
             ExperiencePoints = experiencePoints;
             Quests = new ObservableCollection<QuestStatus>();
+            Recipes = new ObservableCollection<Recipe>();
         }
         #region Properties
         private string _characterClass;
@@ -54,24 +55,6 @@ namespace Engine.Models
         /// </summary>
         public ObservableCollection<QuestStatus> Quests { get; }
         #endregion
-
-        /// <summary>
-        /// 物品检查
-        /// </summary>
-        /// <param name="items"></param>
-        /// <returns></returns>
-        public bool HasAllTheseItems(List<ItemQuantity> items)
-        {
-            foreach (ItemQuantity item in items)
-            {
-                if (Inventory.Count(i => i.ItemTypeID == item.ItemID) < item.Quantity)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         /// <summary>
         /// 增加经验
         /// </summary>
@@ -92,6 +75,15 @@ namespace Engine.Models
             {
                 MaximumHitPoints = Level * 10;
                 OnLeveledUp?.Invoke(this, System.EventArgs.Empty);
+            }
+        }
+
+        public ObservableCollection<Recipe> Recipes { get; }
+        public void LearnRecipe(Recipe recipe)
+        {
+            if (!Recipes.Any(r => r.ID == recipe.ID))
+            {
+                Recipes.Add(recipe);
             }
         }
     }

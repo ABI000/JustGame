@@ -1,0 +1,97 @@
+{
+  "Weapons": [
+    {
+      "ItemTypeID": 1001,
+      "Name": "Pointy stick",
+      "Price": 1,
+      "MinimumDamage": 1,
+      "MaximumDamage": 2
+    },
+    {
+      "ItemTypeID": 1002,
+      "Name": "Rusty sword",
+      "Price": 1,
+      "MinimumDamage": 1,
+      "MaximumDamage": 2
+    },
+    {
+      "ItemTypeID": 1501,
+      "Name": "Snake fang",
+      "Price": 1,
+      "MinimumDamage": 1,
+      "MaximumDamage": 2
+    },
+    {
+      "ItemTypeID": 1502,
+      "Name": "Rat claw",
+      "Price": 1,
+      "MinimumDamage": 1,
+      "MaximumDamage": 2
+    },
+    {
+      "ItemTypeID": 1503,
+      "Name": "Spider fang",
+      "Price": 1,
+      "MinimumDamage": 1,
+      "MaximumDamage": 2
+    }
+
+  ],
+  "HealingItems": [
+
+    {
+      "ItemTypeID": 2001,
+      "Name": "Granola bar",
+      "Price": 1,
+      "HitPointsToHeal": 2
+    }
+
+  ],
+  "MiscellaneousItems": [
+    {
+      "ItemTypeID": 3001,
+      "Name": "Oats",
+      "Price": 1
+    },
+    {
+      "ItemTypeID": 3002,
+      "Name": "Honey",
+      "Price": 1
+    },
+    {
+      "ItemTypeID": 3003,
+      "Name": "Raisins",
+      "Price": 1
+    },
+    {
+      "ItemTypeID": 9001,
+      "Name": "Snake fang",
+      "Price": 1
+    },
+    {
+      "ItemTypeID": 9002,
+      "Name": "Snakeskin",
+      "Price": 2
+    },
+    {
+      "ItemTypeID": 9003,
+      "Name": "Rat tail",
+      "Price": 1
+    },
+    {
+      "ItemTypeID": 9004,
+      "Name": "Rat fur",
+      "Price": 2
+    },
+    {
+      "ItemTypeID": 9005,
+      "Name": "Spider fang",
+      "Price": 1
+    },
+    {
+      "ItemTypeID": 9006,
+      "Name": "Spider silk",
+      "Price": 2
+    }
+  ]
+}
