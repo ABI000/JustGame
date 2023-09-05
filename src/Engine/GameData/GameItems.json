@@ -12,7 +12,7 @@
       "Name": "Rusty sword",
       "Price": 1,
       "MinimumDamage": 1,
-      "MaximumDamage": 2
+      "MaximumDamage": 3
     },
     {
       "ItemTypeID": 1501,
@@ -33,7 +33,7 @@
       "Name": "Spider fang",
       "Price": 1,
       "MinimumDamage": 1,
-      "MaximumDamage": 2
+      "MaximumDamage": 4
     }
 
   ],

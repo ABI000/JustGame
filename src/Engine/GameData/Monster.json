@@ -7,6 +7,7 @@
     "RewardXP": 5,
     "Gold": 1,
     "ImageName": "Snake.png",
+    "Dexterity": 15,
     "LootItems": [
       {
         "Id": 9001,
@@ -26,6 +27,7 @@
     "WeaponID": 1502,
     "RewardXP": 5,
     "Gold": 1,
+    "Dexterity": 8,
     "ImageName": "Rat.png",
     "LootItems": [
       {
@@ -45,6 +47,7 @@
     "MaximumHitPoints": 10,
     "WeaponID": 1503,
     "RewardXP": 10,
+    "Dexterity": 12,
     "Gold": 3,
     "ImageName": "GiantSpider.png",
     "LootItems": [

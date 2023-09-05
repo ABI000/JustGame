@@ -1,6 +1,6 @@
 ﻿using Engine.Actions;
 using Engine.Models;
-using System.Text.Json;
+
 namespace Engine.Factories
 {
     public static class ItemFactory
@@ -10,7 +10,6 @@ namespace Engine.Factories
         static ItemFactory()
         {
             //读取配置文件
-
             GameItems gameItems = JsonHelpr.GetEntity<GameItems>(GAME_DATA_FILENAME);
             foreach (Weapons gameItem in gameItems.Weapons)
             {

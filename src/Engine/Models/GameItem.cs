@@ -1,4 +1,5 @@
 ﻿using Engine.Actions;
+using Newtonsoft.Json;
 
 namespace Engine.Models
 {
@@ -10,6 +11,7 @@ namespace Engine.Models
         /// <summary>
         /// 物品类型
         /// </summary>
+        [JsonIgnore]
         public ItemCategory Category { get; }
         /// <summary>
         /// 物品id
@@ -18,15 +20,19 @@ namespace Engine.Models
         /// <summary>
         /// 名称
         /// </summary>
+        [JsonIgnore]
         public string Name { get; }
         /// <summary>
         /// 价格
         /// </summary>
+        [JsonIgnore]
         public int Price { get; }
         /// <summary>
         /// 是否唯一
         /// </summary>
+        [JsonIgnore]
         public bool IsUnique { get; }
+        [JsonIgnore]
         public IAction Action { get; set; }
         public GameItem(ItemCategory category, int itemTypeID, string name, int price, bool isUnique = false, IAction action = null)
         {

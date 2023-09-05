@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 using System.Xml.Linq;
 
 namespace Engine.Models
@@ -12,7 +13,8 @@ namespace Engine.Models
         /// <param name="maximumHitPoints"></param>
         /// <param name="currentHitPoints"></param>
         /// <param name="gold"></param>
-        public Player(string characterClass, int experiencePoints, string name, int maximumHitPoints, int currentHitPoints, int gold) : base(name, maximumHitPoints, currentHitPoints, gold)
+        public Player(string characterClass, int experiencePoints, string name, int maximumHitPoints, int currentHitPoints, int dexterity, int gold)
+            : base(name, maximumHitPoints, currentHitPoints, dexterity, gold)
         {
             CharacterClass = characterClass;
             ExperiencePoints = experiencePoints;

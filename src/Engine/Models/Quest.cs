@@ -1,4 +1,6 @@
-﻿namespace Engine.Models
+﻿using Newtonsoft.Json;
+
+namespace Engine.Models
 {
     public class Quest
     {
@@ -9,29 +11,35 @@
         /// <summary>
         /// 任务名称
         /// </summary>
+        [JsonIgnore]
         public string Name { get; }
 
         /// <summary>
         /// 任务描述
         /// </summary>
+        [JsonIgnore]
         public string Description { get; }
         /// <summary>
         /// 任务物品
-        /// </summary>       
+        /// </summary>    
+        [JsonIgnore]
         public List<ItemQuantity> ItemsToComplete { get; }
         /// <summary>
         /// 经验奖励
         /// </summary>
+        [JsonIgnore]
         public int RewardExperiencePoints { get; }
         /// <summary>
         /// 金钱奖励
         /// </summary>
+        [JsonIgnore]
         public int RewardGold { get; }
         /// <summary>
         /// 物品奖励
         /// </summary>
+        [JsonIgnore]
         public List<ItemQuantity> RewardItems { get; }
-
+        [JsonIgnore]
         public string ToolTipContents =>
             Description + Environment.NewLine + Environment.NewLine +
             "Items to complete the quest" + Environment.NewLine +

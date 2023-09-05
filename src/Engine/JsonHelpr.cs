@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Engine.Factories;
+using Newtonsoft.Json;
 
 namespace Engine
 {
@@ -6,12 +7,11 @@ namespace Engine
     {
         public static T GetEntity<T>(string path)
         {
-            string jsonString = File.ReadAllText(path);
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException($"Missing data file: {Path.GetFileName(path)}");
             }
-            return JsonSerializer.Deserialize<T>(jsonString)!;
+            return JsonConvert.DeserializeObject<T>(File.ReadAllText(path))!;
 
         }
 

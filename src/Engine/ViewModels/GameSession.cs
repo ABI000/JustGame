@@ -1,11 +1,16 @@
 ﻿using Engine.Factories;
 using Engine.Models;
+using Engine.Services;
+using Newtonsoft.Json;
 
 namespace Engine.ViewModels
 {
     public class GameSession : BaseNotificationClass
     {
+        public string Version { get; } = "0.1.000";
+        private Battle _currentBattle;
         private Player _currentPlayer;
+
         public Player CurrentPlayer
         {
             get { return _currentPlayer; }
@@ -13,20 +18,18 @@ namespace Engine.ViewModels
             {
                 if (_currentPlayer != null)
                 {
-                    _currentPlayer.OnActionPerformed -= OnCurrentPlayerPerformedAction;
                     _currentPlayer.OnLeveledUp -= OnCurrentPlayerLeveledUp;
-                    _currentPlayer.OnKilled -= OnCurrentPlayerKilled;
+                    _currentPlayer.OnKilled -= OnPlayerKilled;
                 }
                 _currentPlayer = value;
                 if (_currentPlayer != null)
                 {
-                    _currentPlayer.OnActionPerformed += OnCurrentPlayerPerformedAction;
                     _currentPlayer.OnLeveledUp += OnCurrentPlayerLeveledUp;
-                    _currentPlayer.OnKilled += OnCurrentPlayerKilled;
+                    _currentPlayer.OnKilled += OnPlayerKilled;
                 }
             }
         }
-        private void OnCurrentPlayerKilled(object sender, System.EventArgs eventArgs)
+        private void OnPlayerKilled(object sender, System.EventArgs eventArgs)
         {
             RaiseMessage("");
             RaiseMessage($"You have been killed.");
@@ -50,15 +53,15 @@ namespace Engine.ViewModels
                 OnPropertyChanged(nameof(HasLocationToSouth));
                 CompleteQuestsAtLocation();
                 GivePlayerQuestsAtLocation();
-                GetMonsterAtLocation();
+                CurrentMonster = CurrentLocation!.GetMonster();
                 CurrentTrader = CurrentLocation.TraderHere;
 
             }
         }
-
+        [JsonIgnore]
         public World CurrentWorld { get; }
         private Trader _currentTrader;
-
+        [JsonIgnore]
         public Trader CurrentTrader
         {
             get { return _currentTrader; }
@@ -70,20 +73,20 @@ namespace Engine.ViewModels
                 OnPropertyChanged(nameof(HasTrader));
             }
         }
+        [JsonIgnore]
         public bool HasTrader => CurrentTrader != null;
         public GameSession()
         {
 
             #region 初始化角色
 
+            CurrentPlayer = new Player("Fighter", 0, "Scott", 10, 10, RandomNumberGenerator.NumberBetween(3, 18), 1000000);
 
-            CurrentPlayer = new Player("Fighter", 0, "Scott", 10, 10, 1000000);
-
-            if (!CurrentPlayer.Weapons.Any())
+            if (!CurrentPlayer.Inventory.Weapons.Any())
             {
                 CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(1001));
             }
-            if (!CurrentPlayer.Consumables.Any())
+            if (!CurrentPlayer.Inventory.HasConsumable)
             {
                 CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(2001));
             }
@@ -98,10 +101,14 @@ namespace Engine.ViewModels
             CurrentWorld = WorldFactory.CreateWorld();
             //初始化位置
             CurrentLocation = CurrentWorld.LocationAt(0, 0);
-
-
         }
 
+        public GameSession(Player player, int x, int y)
+        {
+            CurrentWorld = WorldFactory.CreateWorld();
+            CurrentPlayer = player;
+            CurrentLocation = CurrentWorld.LocationAt(x, y);
+        }
         #region 任务相关
 
 
@@ -112,6 +119,21 @@ namespace Engine.ViewModels
                 if (!CurrentPlayer.Quests.Any(q => q.PlayerQuest.Id == quest.Id))
                 {
                     CurrentPlayer.Quests.Add(new QuestStatus(quest));
+                    RaiseMessage("");
+                    RaiseMessage($"You receive the '{quest.Name}' quest");
+                    RaiseMessage(quest.Description);
+                    RaiseMessage("Return with:");
+                    foreach (ItemQuantity itemQuantity in quest.ItemsToComplete)
+                    {
+                        RaiseMessage($"   {itemQuantity.Quantity} {ItemFactory.CreateGameItem(itemQuantity.ItemID).Name}");
+                    }
+                    RaiseMessage("And you will receive:");
+                    RaiseMessage($"   {quest.RewardExperiencePoints} experience points");
+                    RaiseMessage($"   {quest.RewardGold} gold");
+                    foreach (ItemQuantity itemQuantity in quest.RewardItems)
+                    {
+                        RaiseMessage($"   {itemQuantity.Quantity} {ItemFactory.CreateGameItem(itemQuantity.ItemID).Name}");
+                    }
                 }
             }
         }
@@ -129,7 +151,7 @@ namespace Engine.ViewModels
                         {
                             for (int i = 0; i < itemQuantity.Quantity; i++)
                             {
-                                CurrentPlayer.RemoveItemFromInventory(CurrentPlayer.Inventory.First(item => item.ItemTypeID == itemQuantity.ItemID));
+                                CurrentPlayer.RemoveItemFromInventory(CurrentPlayer.Inventory.Items.First(item => item.ItemTypeID == itemQuantity.ItemID));
                             }
                         }
                         RaiseMessage("");
@@ -185,10 +207,13 @@ namespace Engine.ViewModels
             }
 
         }
-
+        [JsonIgnore]
         public bool HasLocationToNorth => CurrentWorld.LocationAt(CurrentLocation.XCoordinate, CurrentLocation.YCoordinate + 1) != null;
+        [JsonIgnore]
         public bool HasLocationToEast => CurrentWorld.LocationAt(CurrentLocation.XCoordinate + 1, CurrentLocation.YCoordinate) != null;
+        [JsonIgnore]
         public bool HasLocationToSouth => CurrentWorld.LocationAt(CurrentLocation.XCoordinate, CurrentLocation.YCoordinate - 1) != null;
+        [JsonIgnore]
         public bool HasLocationToWest => CurrentWorld.LocationAt(CurrentLocation.XCoordinate - 1, CurrentLocation.YCoordinate) != null;
 
         #endregion
@@ -196,6 +221,7 @@ namespace Engine.ViewModels
         #region 怪物逻辑
 
 
+        [JsonIgnore]
         public Monster CurrentMonster
         {
             get { return _currentMonster; }
@@ -203,89 +229,48 @@ namespace Engine.ViewModels
             {
                 if (_currentMonster != null)
                 {
-                    _currentMonster.OnActionPerformed -= OnCurrentMonsterPerformedAction;
-                    _currentMonster.OnKilled -= OnCurrentMonsterKilled;
+                    _currentBattle.OnCombatVictory -= OnCurrentMonsterKilled;
+                    _currentBattle.Dispose();
                 }
                 _currentMonster = value;
 
                 if (CurrentMonster != null)
                 {
-                    _currentMonster.OnActionPerformed += OnCurrentMonsterPerformedAction;
-                    _currentMonster.OnKilled += OnCurrentMonsterKilled;
-                    RaiseMessage("");
-                    RaiseMessage($"You see a {CurrentMonster.Name} here!");
+                    _currentBattle = new Battle(CurrentPlayer, CurrentMonster);
+                    _currentBattle.OnCombatVictory += OnCurrentMonsterKilled;
                 }
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasMonster));
             }
         }
         private Monster _currentMonster;
+        [JsonIgnore]
         public bool HasMonster => CurrentMonster != null;
-        private void GetMonsterAtLocation()
-        {
-            CurrentMonster = CurrentLocation.GetMonster();
-        }
-        private void OnCurrentMonsterPerformedAction(object sender, string result)
-        {
-            RaiseMessage(result);
-        }
         #endregion
 
 
         #region 战斗逻辑
-        /// <summary>
-        /// 消息推送
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="result"></param>
-        private void OnCurrentPlayerPerformedAction(object sender, string result)
-        {
-            RaiseMessage(result);
-        }
+
         /// <summary>
         /// 战斗计算核心
         /// </summary>
         public void AttackCurrentMonster()
         {
-            if (CurrentMonster == null)
-            {
-                return;
-            }
-           
-            if (CurrentPlayer.CurrentWeapon == null)
-            {
-                RaiseMessage("You must select a weapon, to attack.");
-                return;
-            }
-            CurrentPlayer.UseCurrentWeaponOn(CurrentMonster);
-            if (CurrentMonster.IsDead)
-            {
-                GetMonsterAtLocation();
-            }
-            else
-            {
-                CurrentMonster.UseCurrentWeaponOn(CurrentPlayer);
-            }
+            _currentBattle.AttackOpponent();
         }
         private void OnCurrentMonsterKilled(object sender, System.EventArgs eventArgs)
         {
-            RaiseMessage("");
-            RaiseMessage($"You defeated the {CurrentMonster.Name}!");
-            RaiseMessage($"You receive {CurrentMonster.RewardExperiencePoints} experience points.");
-            CurrentPlayer.ExperiencePoints += CurrentMonster.RewardExperiencePoints;
-            RaiseMessage($"You receive {CurrentMonster.Gold} gold.");
-            CurrentPlayer.ReceiveGold(CurrentMonster.Gold);
-            foreach (GameItem gameItem in CurrentMonster.Inventory)
-            {
-                RaiseMessage($"You receive one {gameItem.Name}.");
-                CurrentPlayer.AddItemToInventory(gameItem);
-            }
+            CurrentMonster = CurrentLocation.GetMonster();
         }
         private void OnCurrentPlayerLeveledUp(object sender, System.EventArgs eventArgs)
         {
             RaiseMessage($"You are now level {CurrentPlayer.Level}!");
         }
         #endregion
+
+        /// <summary>
+        /// 使用消耗品
+        /// </summary>
         public void UseCurrentConsumable()
         {
             if (CurrentPlayer.CurrentConsumable != null)
@@ -294,6 +279,11 @@ namespace Engine.ViewModels
             }
         }
 
+
+        /// <summary>
+        /// 使用图纸
+        /// </summary>
+        /// <param name="recipe"></param>
         public void CraftItemUsing(Recipe recipe)
         {
             if (CurrentPlayer.HasAllTheseItems(recipe.Ingredients))

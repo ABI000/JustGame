@@ -16,8 +16,9 @@ namespace Engine.Models
             int maximumHitPoints,
             GameItem currentWeapon,
             int rewardExperiencePoints,
+            int dexterity,
             int gold
-            ) : base(name, maximumHitPoints, maximumHitPoints, gold)
+            ) : base(name, maximumHitPoints, maximumHitPoints, dexterity, gold)
         {
             Id = id;
             CurrentWeapon = currentWeapon;
@@ -34,7 +35,7 @@ namespace Engine.Models
         public Monster GetNewInstance()
         {
             // "Clone" this monster to a new Monster object
-            Monster newMonster = new Monster(Id, Name, ImageName, MaximumHitPoints, CurrentWeapon, RewardExperiencePoints, Gold);
+            Monster newMonster = new Monster(Id, Name, ImageName, MaximumHitPoints, CurrentWeapon, RewardExperiencePoints, Dexterity, Gold);
             foreach (ItemPercentage itemPercentage in _lootTable)
             {
                 // Clone the loot table - even though we probably won't need it

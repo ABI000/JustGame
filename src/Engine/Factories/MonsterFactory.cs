@@ -12,7 +12,7 @@ namespace Engine.Factories
 
             foreach (var item in monsterGameDatas)
             {
-                _baseMonsters.Add(new Monster(item.Id, item.Name, $".\\Images\\Monsters\\{item.ImageName}", item.MaximumHitPoints, ItemFactory.CreateGameItem(item.WeaponID), item.RewardXP, item.Gold));
+                _baseMonsters.Add(new Monster(item.Id, item.Name, $".\\Images\\Monsters\\{item.ImageName}", item.MaximumHitPoints, ItemFactory.CreateGameItem(item.WeaponID), item.RewardXP, item.Dexterity, item.Gold));
             }
         }
         public static Monster GetMonster(int id)
@@ -32,5 +32,6 @@ namespace Engine.Factories
         public int Gold { get; set; }
         public string ImageName { get; set; }
         public List<GameItem> LootItems { get; set; }
+        public int Dexterity { get; set; }
     }
 }

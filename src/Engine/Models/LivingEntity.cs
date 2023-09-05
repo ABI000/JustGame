@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Engine.Services;
+using Newtonsoft.Json;
 
 namespace Engine.Models
 {
@@ -14,13 +9,28 @@ namespace Engine.Models
         private int _currentHitPoints;
         private int _maximumHitPoints;
         private int _gold;
+
+        private int _dexterity;
+
+        /// <summary>
+        /// 灵巧
+        /// </summary>
+        public int Dexterity
+        {
+            get => _dexterity;
+            private set
+            {
+                _dexterity = value;
+                OnPropertyChanged();
+            }
+        }
         private GameItem _currentWeapon;
         /// <summary>
         /// 最大生命值
         /// </summary>
         public GameItem CurrentWeapon
         {
-            get { return _currentWeapon; }
+            get => _currentWeapon;
             set
             {
                 if (_currentWeapon != null)
@@ -40,7 +50,7 @@ namespace Engine.Models
         /// </summary>
         public string Name
         {
-            get { return _name; }
+            get => _name;
             private set
             {
                 _name = value;
@@ -52,7 +62,7 @@ namespace Engine.Models
         /// </summary>
         public int CurrentHitPoints
         {
-            get { return _currentHitPoints; }
+            get => _currentHitPoints;
             private set
             {
                 _currentHitPoints = value;
@@ -65,7 +75,7 @@ namespace Engine.Models
         /// </summary>
         public int MaximumHitPoints
         {
-            get { return _maximumHitPoints; }
+            get => _maximumHitPoints;
             protected set
             {
                 _maximumHitPoints = value;
@@ -77,7 +87,7 @@ namespace Engine.Models
         /// </summary>
         public int Gold
         {
-            get { return _gold; }
+            get => _gold;
             private set
             {
                 _gold = value;
@@ -92,38 +102,43 @@ namespace Engine.Models
         /// </summary>
         public int Level
         {
-            get { return _level; }
+            get => _level;
             protected set
             {
                 _level = value;
                 OnPropertyChanged();
             }
         }
-        /// <summary>
-        /// 物品集合
-        /// </summary>
-        public ObservableCollection<GameItem> Inventory { get; }
-        /// <summary>
-        /// 物品分类
-        /// </summary>
-        public ObservableCollection<GroupedInventoryItem> GroupedInventory { get; }
-        /// <summary>
-        /// 拥有的武器
-        /// 后期改为多装备
-        /// </summary>
-        public List<GameItem> Weapons => Inventory.Where(i => i.Category == ItemCategory.Weapon).ToList();
 
+
+        private Inventory _inventory;
+        /// <summary>
+        /// 背包
+        /// </summary>
+        public Inventory Inventory
+        {
+            get => _inventory;
+            protected set
+            {
+                _inventory = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// 是否死亡
         /// </summary>
-        public bool IsDead => CurrentHitPoints <= 0;
-
+        public bool IsDead => !IsAlive;
+        /// <summary>
+        /// 是否存活
+        /// </summary>
+        public bool IsAlive => CurrentHitPoints > 0;
         /// <summary>
         /// 死亡事件
         /// 具体执行函数由具体逻辑传入
         /// </summary>
         public event EventHandler? OnKilled;
+
         public event EventHandler<string>? OnActionPerformed;
         /// <summary>
         /// 
@@ -132,16 +147,30 @@ namespace Engine.Models
         /// <param name="maximumHitPoints"></param>
         /// <param name="currentHitPoints"></param>
         /// <param name="gold"></param>
-        protected LivingEntity(string name, int maximumHitPoints, int currentHitPoints, int gold, int level = 1)
+        protected LivingEntity(string name, int maximumHitPoints, int currentHitPoints, int dexterity, int gold, int level = 1)
         {
             Name = name;
             MaximumHitPoints = maximumHitPoints;
             CurrentHitPoints = currentHitPoints;
             Gold = gold;
             Level = level;
-            Inventory = new ObservableCollection<GameItem>();
-            GroupedInventory = new ObservableCollection<GroupedInventoryItem>();
+            Inventory = new Inventory();
+            Dexterity = dexterity;
         }
+
+        public void RaiseActionPerformedEvent(object sender, string result)
+        {
+            OnActionPerformed?.Invoke(this, result);
+        }
+        /// <summary>
+        /// 使用武器
+        /// </summary>
+        /// <param name="target"></param>
+        public void UseCurrentWeaponOn(LivingEntity target)
+        {
+            CurrentWeapon.PerformAction(this, target);
+        }
+
         #region 生命计算逻辑
 
         /// <summary>
@@ -184,6 +213,12 @@ namespace Engine.Models
         {
             CurrentHitPoints = MaximumHitPoints;
         }
+
+        #endregion
+
+        #region 金币处理
+
+
         /// <summary>
         /// 增加金币
         /// </summary>
@@ -209,90 +244,44 @@ namespace Engine.Models
         }
         #endregion
 
-
         #region 物品逻辑
-
-
-        public void AddItemToInventory(GameItem item)
-        {
-            Inventory.Add(item);
-            if (item.IsUnique)
-            {
-                GroupedInventory.Add(new GroupedInventoryItem(item, 1));
-            }
-            else
-            {
-                if (!GroupedInventory.Any(gi => gi.Item.ItemTypeID == item.ItemTypeID))
-                {
-                    GroupedInventory.Add(new GroupedInventoryItem(item, 0));
-                }
-                GroupedInventory.First(gi => gi.Item.ItemTypeID == item.ItemTypeID).Quantity++;
-            }
-            OnPropertyChanged(nameof(Weapons));
-        }
-
-
-
-        public void RemoveItemFromInventory(GameItem item)
-        {
-            Inventory.Remove(item);
-            GroupedInventoryItem? groupedInventoryItemToRemove = item.IsUnique ? GroupedInventory.FirstOrDefault(gi => gi.Item == item) : GroupedInventory.FirstOrDefault(gi => gi.Item.ItemTypeID == item.ItemTypeID);
-            if (groupedInventoryItemToRemove != null)
-            {
-                if (groupedInventoryItemToRemove.Quantity == 1)
-                {
-                    GroupedInventory.Remove(groupedInventoryItemToRemove);
-                }
-                else
-                {
-                    groupedInventoryItemToRemove.Quantity--;
-                }
-            }
-            OnPropertyChanged(nameof(Weapons));
-            OnPropertyChanged(nameof(Consumables));
-            OnPropertyChanged(nameof(HasConsumable));
-        }
-        public void RemoveItemsFromInventory(List<ItemQuantity> itemQuantities)
-        {
-            foreach (ItemQuantity itemQuantity in itemQuantities)
-            {
-                for (int i = 0; i < itemQuantity.Quantity; i++)
-                {
-                    RemoveItemFromInventory(Inventory.First(item => item.ItemTypeID == itemQuantity.ItemID));
-                }
-            }
-        }
 
         /// <summary>
         /// 物品检查
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        public bool HasAllTheseItems(List<ItemQuantity> items)
+        public bool HasAllTheseItems(List<ItemQuantity> items) => Inventory.HasAllTheseItems(items);
+        /// <summary>
+        /// 添加物品
+        /// </summary>
+        /// <param name="item"></param>
+        public void AddItemToInventory(GameItem item)
         {
-            foreach (ItemQuantity item in items)
-            {
-                if (Inventory.Count(i => i.ItemTypeID == item.ItemID) < item.Quantity)
-                {
-                    return false;
-                }
-            }
-            return true;
+            Inventory = Inventory.AddItem(item);
         }
-        public void RaiseActionPerformedEvent(object sender, string result)
+        /// <summary>
+        /// 移除物品
+        /// </summary>
+        /// <param name="item"></param>
+        public void RemoveItemFromInventory(GameItem item)
         {
-            OnActionPerformed?.Invoke(this, result);
+            Inventory = Inventory.RemoveItem(item);
         }
-        #endregion
-        public void UseCurrentWeaponOn(LivingEntity target)
+        /// <summary>
+        /// 批量移除物品
+        /// </summary>
+        /// <param name="itemQuantities"></param>
+        public void RemoveItemsFromInventory(List<ItemQuantity> itemQuantities)
         {
-            CurrentWeapon.PerformAction(this, target);
+            Inventory = Inventory.RemoveItems(itemQuantities);
         }
 
-        #region 物品逻辑
-        public List<GameItem> Consumables => Inventory.Where(i => i.Category == ItemCategory.Consumable).ToList();
-        public bool HasConsumable => Consumables.Any();
+
+        #region 消耗品逻辑
         private GameItem _currentConsumable;
+
+        [JsonIgnore]
         public GameItem CurrentConsumable
         {
             get => _currentConsumable;
@@ -315,6 +304,7 @@ namespace Engine.Models
             CurrentConsumable.PerformAction(this, this);
             RemoveItemFromInventory(CurrentConsumable);
         }
+        #endregion
         #endregion
     }
 }

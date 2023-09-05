@@ -2,7 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace Engine.Models
@@ -20,16 +21,20 @@ namespace Engine.Models
         /// <summary>
         /// 地名
         /// </summary>
+        [JsonIgnore]
         public string Name { get; }
         /// <summary>
         /// 描述
         /// </summary>
+        [JsonIgnore]
         public string Description { get; }
         /// <summary>
         /// 图片
         /// </summary>
+        [JsonIgnore]
         public string ImageName { get; }
 
+        [JsonIgnore]
         /// <summary>
         /// 在图任务
         /// </summary>
@@ -37,10 +42,12 @@ namespace Engine.Models
         /// <summary>
         /// 交易人员
         /// </summary>
+        [JsonIgnore]
         public Trader TraderHere { get; set; }
         /// <summary>
         /// 怪物
         /// </summary>
+        [JsonIgnore]
         public List<MonsterEncounter> MonstersHere { get; set; } =
             new List<MonsterEncounter>();
         /// <summary>
